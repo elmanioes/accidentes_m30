@@ -1,0 +1,2055 @@
+---
+title: "PREDICCIÓN DE ASISTENCIA MÉDICA EN ACCIDENTES OCURRIDOS EN LA VÍA DE CIRCUNVALACIÓN M-30 DE MADRID"
+author: "Manuel Villa González"
+date: "10 de diciembre de 2019"
+output: html_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE)
+
+```
+
+
+<p style="font-family: arial; font-size:14pt;">
+UNED.  
+
+TRABAJO FIN DE MASTER de BIG DATA Y DATA SCIENCE: APLICADOS A LA ECONOMÍA Y A LA ADMINISTRACIÓN Y DIRECCIÓN DE EMPRESAS.  
+
+
+TITULO:  
+
+**PREDICCIÓN DE ASISTENCIA MÉDICA EN ACCIDENTES OCURRIDOS EN LA VÍA DE CIRCUNVALACIÓN M-30 DE MADRID**
+
+</p>
+
+
+# **Introducción** 
+
+
+<p style="font-family: arial; font-size:11pt;text-align: justify;"> La M-30 es la vía de circunvalación de la ciudad de Madrid, y desde su cierre en la década de los 90 supone el elemento distribuidor de todos los flujos de tráfico que discurren por la capital. Se trata de un anillo de 32 km. y que representa la vía más transitada de España. 
+
+Por otro lado, los accidentes de tráfico suponen uno de los problemas más importantes que afronta la sociedad actual debido a los importantes costes sociales y económicos que genera.
+
+
+Calle30, empresa  mixta, dependiente del Ayuntamiento de Madrid, desde que un convenio firmado en 2004 entre Ministerio de Fomento y Ayuntamiento de Madrid, se cedió la titularidad de la vía a este último, gestiona la explotación, conservación y mantenimiento del anillo, infraestructuras, enlaces, etc. ascrita al Área de Medio Ambiente y Movilidad. Calle 30, desde 2013 y según la Ley de transparencia, publica diferente información dentro del Portal de datos abiertos del Ayuntamiento de Madrid, y en concreto desde 2017, diversas estadísticas en relación a las incidencias y accidentes sucedidos en esta vía. 
+
+
+La gestión de estos datos puede representar una mejora para paliar o disminuir los accidentes o una vez sucedidos actuar con mayor premura y la calidad que demandan los usuarios.   
+</p>
+
+
+# **Objetivo** 
+
+
+<p style="font-family: arial; font-size:11pt;text-align: justify">Este estudio pretende estudiar las características ocurridas en la muestra de los accidentes presentados en la base de datos correspondiente a 2018, analizando su ocurrencia según las diferentes variables presentadas para concluir prediciendo si en relación a los primeros datos recibidos de un accidente en calle30 (fecha, hora, lugar, condiciones climatológicas,) puede predecirse si el accidente precisa de asistencia sanitaria, para en su caso suministrarla de forma inmediata.  
+
+Por tanto, el objetivo del estudio, es si una vez comunicado un accidente es posible determinar si hace falta asistencia médica, en base a un modelo de clasificación.</p>
+
+# **Bases de datos:**
+
+
+**Histórico de incidencias y accidentes en calle 30**
+
+<p style="font-family: arial; font-size:11pt;text-align: justify">Inicialmente se contempló el uso único de la base de datos  [Tráfico Calle 30. Histórico de incidencias y accidentes] (https://datos.madrid.es/egob/catalogo/300201-4-calle30-accidentes-historico.csv )  perteneciente al  [Portal de datos abiertos del Ayuntamiento de Madrid](https://datos.madrid.es/portal/site/egob/).  
+
+Este conjunto de datos ofrece los datos de accidentes e incidencias que se han producido en la Calle 30 en el año 2018.  De cada una de las incidencias se incluye, entre otros:  
+* Fecha y hora de la incidencia.  
+* Ubicación y localización.  
+* Tipo de accidente.  
+*	Estado del firme.  
+*	Presencia de recursos externos (Guardia Civil, Policía Municipal, SAMUR, etc.).     
+*	Vehículos involucrados.  
+*	Daños causados.  
+*	Materiales utilizados,etc.    
+
+En concreto, las variables presentadas son:  
+
+Variable | Descripción |
+---------|--------------
+Fecha| 	Fecha de la incidencia|
+Hora| 	Hora de la incidencia |
+Día |	Día de semana |
+Nº Incidencia |	Código (añomesdia-número)| 
+Carretera |	Carretera |
+MC30|	Código interno que identifica el lugar del túnel de la M-30 en el que se ha producido la incidencia. Cada tramo del túnel tiene un código formado por 4 números y 2 letras: Los números indican el punto kilométrico y las letras el tramo en el que se está. Por ejemplo: NC significa calzada iNterior Central, XL es eXterior Lateral, FT es avenida de Portugal entrada a Madrid, R hacen mención a Ramales, etc. |
+Calzada|	Entrada / Exterior / Interior / Salida |
+Localización| 	Ramal / Tronco / VS |
+Enlace | 	Túnel / Superficie |
+Tipo de accidente |	Atropello / Colisión de vehículos / Colisión de obstáculos / Salida vía / Otros |
+Tipo de colisión | 	Frontal / Lateral / Por alcance / Contra mediana |
+Nº Vehículos implicados |	Número de vehículos implicados |
+Nº Turismos |	Número de turismos |
+Nº Motocicletas |	Número de motocicletas |
+Nº vehículos pesados |	Número de vehículos pesados |
+HL |	Herido Leve |
+HG |	Herido Grave |
+VM |	Víctima Mortal |
+Daños al mobiliario |	Daños en el mobiliario urbano (SI / NO)| 
+Circulación |	Fluida / Densa / Congestionada |
+Estado del Firme |	Aceite / Mojado / Seco y limpio |
+Presencia Recursos Externos |	Policía Municipal / Policía Nacional / SAMUR / Bomberos / Guardia Civil (todas las combinaciones posibles) |
+Corte Carril |	Corte de carril |
+Vertido |	Vertido |
+Grúa usuario |	Grúa usuario |
+Grúa Propia EMESA |	Grúa Propia EMESA |
+Grúa externa |	Grúa externa |
+Grúa Movilidad |	Grúa Movilidad |
+Factores Atmosféricos | Buen tiempo / Lluvia / Niebla / Nieve / Viento / Otros | Visibilidad señalización |Visibilidad señalización |
+Señalización de Peligro |Señalización de Peligro |
+Visibilidad restringida por | Visibilidad restringida por |
+Aceras | Aceras |
+Árboles | Árboles |
+Vehículos denominación |Vehículos denominación |
+Descripción del accidente | Descripción del accidente |
+Daños causados al viario | Daños causados al viario |
+Materiales utilizados | Materiales utilizados |
+Observaciones |Observaciones |
+
+**Historico de datos de usuarios**
+
+Una vez iniciado el estudio, se consideró la utilización de datos de aforos de tráfico de los usuarios de Calle 30, para determinar la incidencias de la congestión del tráfico en la ocurrencia de los accidentes. Aunque se ha incorporado este dataset, los datos encontrados corresponden a medias diarias y no a horarias, lo que sería más interesante, pues los usuarios varían mucho en determinadas franjas horarias. Junto a los datos de usuarios, se incorporan los de velocidad media y distancia recorrida media.
+
+
+Puede obtenerse esta información a través de la web [Tráfico Calle 30. Histórico de datos de usuarios que han circulado desde 2013]((https://datos.madrid.es/portal/site/egob/menuitem.c05c1f754a33a9fbe4b2e4b284f1a5a0/?vgnextoid=f2fa3762b5bbb410VgnVCM1000000b205a0aRCRD&vgnextchannel=374512b9ace9f310VgnVCM100000171f5a0aRCRD&vgnextfmt=default) ) perteneciente también al Portal de Portal de datos abiertos del Ayuntamiento de Madrid.
+
+
+Esta base de datos proporciona los datos día a día desde el 01/01/2013 hasta la actualidad y que nos muestra la siguiente información:--
+
+*	Usuarios que han circulado ese día por Calle 30.  
+*	Vehículos por kilómetro de la totalidad de Calle 30.  
+*	Vehículos por kilómetro en ramales de Calle 30.  
+*	Velocidad media de los vehículos.  
+*	Distancia media recorrida.  
+*	Tiempo medio de recorrido.  
+
+Esta base de datos se descarga en un fichero xml.
+
+**Datos meteorológicos**
+
+Aunque en la base de datos del histórico de accidentes hay incorporada dos variables que podrían inferir conocimiento climatológicos como son las variables "Factores Atmosféricos" con las opciones _ Buen tiempo / Lluvia / Niebla / Nieve / Viento / Otros - y "Estado del firme" - Aceite / Mojado / Seco y limpio -, se decidió incluir los datos suministrados por AEMET de temperatura media, precipitación y velocidad del viento.
+
+Los datos meteorológicos de la ciudad de Madrid, en concreto de la Estación de Retiro, proceden de AEMET OpenData, [servicio de datos abiertos de la Agencia Estatal de Meteorología](http://www.aemet.es/es/datos_abiertos/AEMET_OpenData) y se descargaron variables de temperatura, precipitaciones y velocidad del viento.
+
+
+La descarga de estos datos fue a través de un archivo. json, posteriormente convertido a csv.</p>
+
+
+# *Exploración y preprocesado de datos*
+
+#### Carga de librerías
+
+```{r}
+
+# Librerias para estudio y representación de datos
+suppressPackageStartupMessages(library(readxl)) #Descarga de datasets
+suppressPackageStartupMessages(library(dplyr)) #Manejo de datos
+suppressPackageStartupMessages(library(sqldf)) #Manejo de datos con código sql
+suppressPackageStartupMessages(library(ggplot2)) #Representación gráfica
+suppressPackageStartupMessages(library(plotly)) #Representación gráfica
+suppressPackageStartupMessages(library(lubridate)) #fechas
+suppressPackageStartupMessages(library(formattable)) #Permite salidas de tablas 
+suppressPackageStartupMessages(library(vcd)) #Cálculo de estadísticos de correlación 
+suppressPackageStartupMessages(library(corrplot)) #Representación de gráficos de correlación
+suppressPackageStartupMessages(library(XML)) #Descarga ficheros XLM
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(ggthemes))
+suppressPackageStartupMessages(library(grid))
+suppressPackageStartupMessages(library(knitr)) # representación de tablas
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(purrr))
+suppressPackageStartupMessages(library(ggpubr))
+suppressPackageStartupMessages(library(scatterplot3d)) #realización de gráficas
+suppressPackageStartupMessages(library(corrgram)) #realización tablas de correlación
+
+# Representación y visores para datos geográficos
+suppressPackageStartupMessages(library(rgdal))
+suppressPackageStartupMessages(library(sf)) # datos espaciales geográficos
+suppressPackageStartupMessages(library(leaflet)) # Visor geográfico
+suppressPackageStartupMessages(library(RColorBrewer))
+suppressPackageStartupMessages(library(radiant.data))
+
+# Algoritmos y modelos
+suppressPackageStartupMessages(library(caret)) #Cálculo de modelos
+suppressPackageStartupMessages(library(gmodels)) 
+suppressPackageStartupMessages(library(doParallel)) #Parallel backend
+suppressPackageStartupMessages(library(ROCR)) #curvas ROC
+suppressPackageStartupMessages(library(party)) 
+suppressPackageStartupMessages(library(rpart))
+suppressPackageStartupMessages(library(randomForest)) #modelos Random Forest
+suppressPackageStartupMessages(library(C50)) #modelo C.50 
+suppressPackageStartupMessages(library(gbm)) #modelos Stochastic Gradient Boosting
+suppressPackageStartupMessages(library(xgboost)) #modelo eXtreme Gradient Boosting 
+suppressPackageStartupMessages(library(glmnet)) #modelo lasso
+suppressPackageStartupMessages(library(RWeka)) #modelo M5
+suppressPackageStartupMessages(library(psych)) #analisis factorial
+suppressPackageStartupMessages(library(rpart.plot)) 
+
+
+
+```
+
+**Algunas funciones empleadas**
+
+Función para la utilización de múltiples gráficos.
+
+```{r}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  suppressPackageStartupMessages(library(grid))
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+
+```
+
+
+
+
+#### Descarga de la base de datos principal
+
+```{r}
+
+library(readr)
+
+Listado_accidentes_2018 <- read_delim("Listado_accidentes_2018.csv", 
+    ";", escape_double = FALSE, locale = locale(encoding = "ISO-8859-1"), 
+    na = "0", trim_ws = TRUE)
+View(Listado_accidentes_2018)
+
+```
+
+#### Adecuación de variables
+
+En las siguientes lineas de código se realizaran diferentes operaciones relacionadas con la adecuación de las variables para el estudio.
+
+Se han realizados diversas operaciones para factorizar los datos procedentes de las variables de fechas, en otras como dia de la semana, mes, hora (utilizando la librería lubridate)
+
+
+Tambien se ha actuado sobre los valores ausentes , especialmente motivado por datos con valor nulo ( Es sencilla la comprobación, como por ejemplo en las variables de  tipo de vehículo, que debe coincidir su suma con la variable "vehiculos implicados").
+En algun otro caso, sin clara determinación del significado del NA en variables cualitativas, se ha optado por la imputación de la moda. 
+
+
+Por otro lado, existen tambien errores tipográficos en algunos campos de ciertas variables que aparecen con tilde unas veces, o con mayúsculas, etc.
+
+En algunos casos, tambien se ha procedido a una reclasificación en variables con algunos factores de muy pequeña incidencia.
+
+En cuanto a outliers, no se han advertido problema en las variables de la base de datos empleada.
+
+
+```{r}
+
+# Base de datos de trabajo
+
+dataIn <- Listado_accidentes_2018
+
+# Dia como variable de fecha
+
+dataIn$date_d <- dmy(dataIn$Fecha)
+dataIn$diasem <- wday(dataIn$date_d, label = TRUE, abbr = FALSE)
+dataIn$mes <- month(dataIn$date_d, label=TRUE , abbr = FALSE)
+dataIn$anio <- year(dataIn$date_d)
+
+#Obtenemos el pk de la variable MC30
+
+dataIn$pk <- substring(dataIn$MC30,1,2)
+dataIn$pks <- substring(dataIn$MC30,1,2)
+dataIn$pm <- substring(dataIn$MC30,5,6)
+dataIn$codlet <- substring(dataIn$MC30,3,4)
+dataIn$pkcomp <- paste0(dataIn$pks,dataIn$pm)
+
+# Tipo de vehículo. Es estas variables si ese tipo de vehículo no ha intervenido en el accidente, figura NA.
+
+names (dataIn)[13] = "Vehiculos"
+names (dataIn)[14] = "Turismos"
+names (dataIn)[15] = "Motos"
+names (dataIn)[16] = "Pesados"
+
+#VARIABLE vehiculos (Total vehículos implicados en el accidente)
+
+dataIn$VEH <- as.integer(dataIn$Vehiculos)
+dataIn$VEH[is.na(dataIn$VEH)] <- 0
+dataIn$VEH_f <- as.factor(dataIn$VEH)
+
+#VARIABLE TURISMOS
+
+dataIn$TUR <- as.integer(dataIn$Turismos)
+dataIn$TUR[is.na(dataIn$TUR)] <- 0
+dataIn$TUR_f <- as.factor(dataIn$TUR)
+
+#VARIABLE MOTOS
+
+dataIn$MOT <- as.integer(dataIn$Motos)
+dataIn$MOT[is.na(dataIn$MOT)] <- 0
+dataIn$MOT_f <- as.factor(dataIn$MOT)
+
+#VARIABLE PESADOS
+
+dataIn$PES <- as.integer(dataIn$Pesados)
+dataIn$PES[is.na(dataIn$PES)] <- 0
+dataIn$PES_f <- as.factor(dataIn$PES)
+
+# Variable CALZADA
+
+dataIn$CALZADA <- as.factor(dataIn$CALZADA)
+# creando factor recodificado
+dataIn$CALZADA_rec <- factor(dataIn$CALZADA, levels = c("Entrada","ENTRADA","Exterior","EXTERIOR","Interior", "INTERIOR","Salida","SALIDA" ),labels = c("ENTRADA","ENTRADA","EXTERIOR","EXTERIOR","INTERIOR","INTERIOR","SALIDA","SALIDA"))
+
+# Variable LOCALIZACIÓN
+
+names (dataIn)[9] = "Localizac"
+dataIn$LOCALIZACION <- as.factor(dataIn$Localizac)
+
+# Variable ENLACE
+
+dataIn$enlace_f <- as.factor(dataIn$Enlace)
+
+# Variable TIPO ACCIDENTE
+
+dataIn$ACCIDENTE_f <- as.factor(dataIn$`Tipo de accidente`)
+dataIn$ACCIDENTE_f_rec <- factor(dataIn$ACCIDENTE_f, levels = c( "","Atropello","Colisión de vehículos","Colisión obstaculo","otros","Otros","Salida de vía","Salida de Vía","Vuelco" ),
+                              labels = c("Col_veh","Atropello","Col_veh","Col_obst","Col_veh","Col_veh","Salida_via","Salida_via","Vuelco"))
+
+# Variable TIPO COLISION
+
+dataIn$COLISION_f <- as.factor(dataIn$`Tipo de colisión`)
+dataIn$COLISION_f <- factor(dataIn$COLISION_f, levels = c( "","Contra mediana","Frontal","Lateral","Por alcance" ),
+                              labels = c("Por alcance","Contra mediana","Frontal","Lateral","Por alcance" ))
+
+# Variable TIPO CIRCULACION
+
+names (dataIn)[21] = "Circulacion"
+dataIn$CIRCULACION_f <- as.factor(dataIn$Circulacion)
+
+dataIn$CIRCULACION_f <- factor(dataIn$CIRCULACION_f, levels = c( "","Densa","Fluida","Congestionada"), labels = c("Fluida","Densa","Fluida","Congestionada"))
+
+# Variable TIPO CARRETERA
+
+dataIn$CARRETERA_f <- as.factor(dataIn$Carretera)
+
+# Variable ESTADO DEL FIRME
+
+dataIn$ESTADO_f <- as.factor(dataIn$`Estado del Firme`)
+dataIn$ESTADO_f <- factor(dataIn$ESTADO_f, levels = c( "","Helado","Mojado","Seco y Limpio"),
+                              labels = c("Otros","Helado","Mojado","Seco"))
+
+# Variable CORTE CARRIL
+
+dataIn$CORTE_f <- as.factor(dataIn$`Corte Carril`)
+dataIn$CORTE_f[is.na(dataIn$CORTE_f)] <- "No"
+dataIn$CORTE_f <- factor(dataIn$CORTE_f, levels = c( "","No","Si","SI"),
+                              labels = c("NO","NO","SI","SI"))
+
+dataIn$CORTE_num <- ifelse (dataIn$CORTE_f == "SI", 1,0)
+
+# Variable VERTIDO
+
+dataIn$VERTIDO_f <- as.factor(dataIn$Vertido)
+dataIn$VERTIDO_f <- factor(dataIn$VERTIDO_f, levels = c( "","No","Si"),
+                              labels = c("NO","NO","SI"))
+
+dataIn$VERTIDO_num <- ifelse (dataIn$VERTIDO_f == "SI", 1,0)
+
+# Variable DAÑOS MOBILIARIO
+
+dataIn$MOBIL_f <- as.factor(dataIn$`Daños al mobiliario urbano`)
+#dataIn$VERTIDO_f <- factor(dataIn$VERTIDO_f, levels = c( "","No","Si"), labels = c("NO","NO","SI"))
+dataIn$MOBIL_num <- ifelse (dataIn$MOBIL_f == "SI", 1,0)
+
+# Variable FACTORES ATMOSFERICOS
+
+dataIn$ATMOSF_f <- as.factor(dataIn$`Factores Atmosféricos`)
+dataIn$ATMOSF_f <- factor(dataIn$ATMOSF_f, levels = c( "","Buen Tiempo","Lluvia","Niebla","Nieve","Otros","Viento"),
+                              labels = c( "Otros","Bueno","Lluvia","Niebla","Nieve","Otros","Viento"))
+
+# Variable HERIDOS LEVES
+
+dataIn$HL <- as.integer(dataIn$H.L.)
+dataIn$HL[is.na(dataIn$HL)] <- 0
+dataIn$HL_f <- as.factor(dataIn$HL)
+
+
+# Variable HERIDOS GRAVES
+
+dataIn$HG <- as.integer(dataIn$H.G.)
+dataIn$HG[is.na(dataIn$HG)] <- 0
+dataIn$HG_f <- as.factor(dataIn$HG)
+
+# Variable VICTIMAS MORTALES
+
+dataIn$VM <- as.integer(dataIn$V.M.)
+dataIn$VM[is.na(dataIn$VM)] <- 0
+dataIn$VM_f <- as.factor(dataIn$VM)
+
+# Agrupación de las grúas (nº total de gruas = usuario + emesa +externe + movilidad )
+
+names (dataIn)[26] = "Grua_usuario"
+names (dataIn)[27] = "Grua_emesa"
+names (dataIn)[28] = "Grua_externa"
+names (dataIn)[29] = "Grua_movilidad"
+
+dataIn$Grua_usuario_f <- as.factor(dataIn$Grua_usuario)
+dataIn$Grua_emesa_f <- as.factor(dataIn$Grua_emesa)
+dataIn$Grua_externa_f <- as.factor(dataIn$Grua_externa)
+dataIn$Grua_movilidad_f <- as.factor(dataIn$Grua_movilidad)
+
+dataIn$Grua_usuario_num <- ifelse(dataIn$Grua_usuario_f == "Si",1,0)
+dataIn$Grua_emesa_num <- ifelse(dataIn$Grua_emesa_f == "Si",1,0)
+dataIn$Grua_externa_num <- ifelse(dataIn$Grua_externa_f == "Si",1,0)
+dataIn$Grua_movilidad_num <- ifelse(dataIn$Grua_movilidad_f == "Si",1,0)
+
+dataIn$GRUAS <- rowSums (dataIn[,84:87])
+
+#PRESENCIA DE RECURSOS
+
+names (dataIn)[23] = "RecExt"
+
+valores1 <- c("SAMUR","samur")
+texto <- dataIn$RecExt
+dataIn$SAMUR <- grepl(paste(valores1, collapse = "|" ), texto)
+
+valores2 <- c("SUMMA","112","Roja")
+texto <- dataIn$RecExt
+dataIn$SUMMA <- grepl(paste(valores2, collapse = "|" ), texto)
+
+valores3 <- c("Civil","G.","Guardia")
+texto <- dataIn$RecExt
+dataIn$GCIVIL <- grepl(paste(valores3, collapse = "|" ), texto)
+
+valores4 <- "Municipal"
+texto <- dataIn$RecExt
+dataIn$MUNICIPAL <- grepl(paste(valores4, collapse = "|" ), texto)
+
+valores5 <- "Nacional"
+texto <- dataIn$RecExt
+dataIn$NACIONAL <- grepl(paste(valores5, collapse = "|" ), texto)
+
+valores6 <- "Movilidad"
+texto <- dataIn$RecExt
+dataIn$MOVILIDAD <- grepl(paste(valores6, collapse = "|" ), texto)
+
+valores7 <- "Bomberos"
+texto <- dataIn$RecExt
+dataIn$BOMBEROS <- grepl(paste(valores7, collapse = "|" ), texto)
+
+
+dataIn$TOTALREC <- rowSums (dataIn[,89:95])
+
+dataIn$hora_d <- as.POSIXct(dataIn$Hora, format="%H:%M")
+dataIn$hora_f <- format(dataIn$hora_d, "%H")
+
+
+
+
+```
+
+Se introduce "af" como variable de estudio. Inicialmente la variable "atendidos" recoge la suma en cada accidente de los heridos leves, heridos graves y víctimas mortales. Como lo que se desea determinar si es necesaria o no, la presencia de asistencia médica factorizamos "atendidos", declarando la nueva variable factor "af" que tiene el  valor 0 ("no asistencia")si no se precisa asistencia médica y el valor 1 "si_asistencia") si son necesarios los servicios médicos.
+
+Se puede observar que de las 2232 observaciones correspondientes a las incidencias estudiadas, en 524 casos no hizo falta asistencia, mientras que 1.708 casos sí que fue necesaria.
+
+```{r}
+# variable de estudio
+
+dataIn$atendidos <- dataIn$HL + dataIn$HG+ dataIn$VM
+
+dataIn$af <- as.factor(ifelse (dataIn$atendidos > 0, "si_asistencia","no_asistencia"))
+
+table(dataIn$af)
+
+```
+
+#### Primera selección de variables
+
+En el proceso anterior, se generaron infinidad de variables, en su mayoría repetidas o no eliminadas en la factorización, que se han eliminado en este paso.
+
+
+```{r}
+
+dataEST <- dataIn[,c(41:44,46,48,50,52,54,56,64:66,73,98, 99,100, 60)]
+
+```
+
+#### Bases de datos auxiliares
+
+Importación del fichero de datos de tráfico en formato XML, descargado de la web de Datos abiertos del Ayuntamiento de Madrid. 
+
+
+```{r}
+
+ub_xml <- "C:/mio/BD_uned/MOD_16_TFM/codigos/historicousuarios2.xml"  # Ubicación del archivo XML 
+#require(XML)
+#require(dplyr)
+library(tidyr)
+
+solo_numeros <- function(x){
+ as.numeric(gsub("([0-9]+).*$", "\\1", x))
+}
+
+#Lectura de fichero
+datos=xmlToDataFrame(ub_xml)
+
+#Comenzamos el fitrado
+datos <- datos %>% select(-campo) %>% filter(!is.na(Fecha))
+datos$date_d <- as.Date(datos$Fecha, "%d/%m/%Y")
+
+datos2 <- datos %>% mutate(
+ UsuariosCalle30 = extract_numeric(UsuariosCalle30),
+ vehxKmTotales = extract_numeric(vehxKmTotales),
+ vehxKmRamales = extract_numeric(vehxKmRamales),
+ velocidadMedia = extract_numeric(velocidadMedia),
+ distanciaMediaRecorrida = extract_numeric(distanciaMediaRecorrida),
+ tiempoMediodeRecorrido_min = extract_numeric(substr(tiempoMediodeRecorrido,1,4)),
+ tiempoMediodeRecorrido_seg = extract_numeric(substring(tiempoMediodeRecorrido,4,10))
+)
+
+
+datos2$anio <- format(datos2$date_d, "%Y") #creamos una columna del año
+datos2$ID <- seq.int(nrow(datos2))
+
+
+```
+
+La base descargada incorpora los datos de tráfico desde 2013 a la actualidad. Se filtra la base para seleccionar únicamente los correspondientes a 2018. 
+
+Por otra parte, se han detectado algunos datos erroneos en el campo velocidad media, sucedidos por la eliminación del punto de los decimales y de sencilla subsanación.  
+
+
+```{r}
+
+
+datos_traf_2018 <- datos2 %>% filter (anio == 2018) %>% select (ID, date_d, UsuariosCalle30,vehxKmTotales, velocidadMedia,  distanciaMediaRecorrida)
+
+datos_erroneos <- datos_traf_2018 %>% filter (velocidadMedia > 100) %>% select (ID, date_d, UsuariosCalle30,vehxKmTotales, velocidadMedia,  distanciaMediaRecorrida)
+
+datos2[34, "velocidadMedia"] <- 69.46
+datos2[116, "velocidadMedia"] <- 68.72
+datos2[751, "velocidadMedia"] <- 68.48
+datos2[833, "velocidadMedia"] <- 68.48
+datos2[2061, "velocidadMedia"] <- 68.76
+datos2[2142, "velocidadMedia"] <- 68.66
+
+datos_traf_2018 <- datos2 %>% filter (anio == 2018) %>% select (ID, date_d, UsuariosCalle30, velocidadMedia,  distanciaMediaRecorrida)
+
+summary(datos_traf_2018)
+
+```
+
+Sobre la tabla de estudio, procedente de la base de datos inicial, incorporamos los datos correspondientes al volumen de tráfico, velocidad media y distancia media, que son díarios, por lo que todos los accidentes sucedidos en el mismo día tendran los mismos valores de estas variables aportadas, ya que no se poseen los datos de tráfico por hora, que sería mucho más interesante para el estudio.   
+
+```{r}
+# Comprobación de columna de unión
+class(dataEST$date_d)
+class(datos_traf_2018$date_d)
+
+# Unión de tablas
+dataEST_t <- merge(dataEST, datos_traf_2018)
+
+```
+
+Analizando los datos de tráfico incorporados, podría ser interesante reflejar en una variable la influencia de los accidentes sobre días laborables y no laborables. En este sentido, se han introducido los días festivos de 2018 y se han sumado los sábados y domingos, dentro de la variable factor "laborable_f". Finalmente se han unido al dataset de trabajo.
+
+
+```{r}
+
+# Tabla de festivos
+
+festivos <- data.frame(
+    date_d = c("2018-1-1","2018-1-6","2018-3-29","2018-3-30","2018-5-1","2018-5-2","2018-5-15","2018-8-15","2018-10-12","2018-11-1","2018-11-9","2018-12-6","2018-12-8","2018-12-25","2018-12-31" ), 
+    tipo_fest= c("FN","FN","FN","FN","FN","FR","FL","FN","FN","FN","FL",rep("FN",4)))
+
+festivos$date_d <- as.Date(festivos$date_d, "%Y-%m-%d")
+
+dataEST_tf <- merge(dataEST_t, festivos, by= "date_d", all.x = TRUE)
+
+# Fines de semana
+dataEST_tf$finsem <- ifelse (dataEST_tf$diasem == "sábado"|dataEST_tf$diasem == "domingo", "FIN","WD")
+
+dataEST_tf$tipo_fest <- factor(dataEST_tf$tipo_fest, levels = c("FL","FN","FR","NO"))
+
+dataEST_tf$tipo_fest[is.na(dataEST_tf$tipo_fest)] <- "NO"
+
+dataEST_tf <- dataEST_tf %>% mutate (laborable = ifelse (finsem =="FIN"|tipo_fest != "NO", 1,2))
+
+dataEST_tf$laborable_f <- as.factor(dataEST_tf$laborable)
+
+dataEST_tf$laborable_f <- factor(dataEST_tf$laborable, levels = c(1,2),
+                              labels = c("No_laborable","laborable"))
+
+
+```
+
+Se ha considerado interesante también incluir datos cuantitativos de climatología, procedentes de AEMET, relativos a temperatura media diaria, precipitación recogida diaria y velocidad del viento media del día. Los datos descargados de la web tienen formato .json y se han convertido en un fichero excel para su importación. Igual que en pasos anteriores, se incorporan al dataset de trabajo.
+
+
+```{r message=FALSE, warning=FALSE}
+
+library(readxl)
+X2018_datos_retiro_mod <- read_excel("C:/mio/BD_uned/MOD_16_TFM/codigos/dataset/2018_datos_retiro_mod.xlsx", 
+    col_types = c("text", "numeric", "numeric", 
+        "numeric"))
+
+
+clima_madrid_2018 <- X2018_datos_retiro_mod
+
+names (clima_madrid_2018) = c("date_d", "temperat", "precipit", "viento")
+
+clima_madrid_2018$date_d <- ymd (clima_madrid_2018$date_d)
+
+dataIn$TUR <- as.integer(dataIn$Turismos)
+clima_madrid_2018$precipit[is.na(clima_madrid_2018$precipit)] <- 0
+clima_madrid_2018$viento[is.na(clima_madrid_2018$viento)] <- 0
+
+
+```
+
+Despues se procede a unirlo con el dataset anterior, para establecer el fichero definitivo ya limpio.
+
+```{r}
+
+dataEST_tfc <- merge(dataEST_tf, clima_madrid_2018)
+
+sapply(dataEST_tfc, function (x) sum (is.na(x))) 
+str (dataEST_tfc)
+summary(dataEST_tfc)
+
+
+
+```
+
+# **Análisis descriptivo de variables**
+
+#### Usuarios Calle 30
+
+En estos dos gráficos de barras se muestran los usuarios medios de Calle 30, por día de semana y por mes, ordenados de mayor a menor. Puede observarse que el mayor numero de usuarios se produce en días laborables frente a los fines de semana con aproximadamente 400.000 vehículos de diferencia. Respecto a la influencia respecto a los meses del año, claramente los menores usuarios corresponden con fechas de vacaciones ya sean estivales o de Navidad.
+
+```{r}
+
+#Usuarios por dia de la semana
+
+dataEST_tfc %>%   group_by(diasem) %>%
+  summarize( usuarios = mean(UsuariosCalle30)/1000000) %>%
+  ggplot( aes(x = reorder(diasem, -usuarios), y = usuarios)) +
+  geom_text(aes(label = round(usuarios,2)), position = position_dodge(width = 0.9),   size=3, vjust=-1, hjust=0.5 ,col="black")+ 
+  ylim(0,1.8)+
+  geom_col(color = 'blue', fill = 'blue') + 
+  xlab('Día Semana') + ylab('Número de usuarios') +
+  ggtitle(" Millones de usuarios medios por día de la semana") +  
+  theme_bw()
+  
+
+#Usuarios por mes
+
+dataEST_tfc %>%   group_by(mes) %>%
+  summarize( usuarios = mean(UsuariosCalle30)/1000000) %>%
+  ggplot( aes(x = reorder(mes, -usuarios), y = usuarios)) +
+   geom_col(color = 'blue', fill = 'blue') + 
+   geom_text(aes(label = round(usuarios,2)), position = position_dodge(width = 0.9),   size=3, vjust=-1, hjust=0.5 ,col="black")+ 
+  ylim(0,1.8)+
+   xlab('Mes') + ylab('Número de usuarios') + 
+   ggtitle(" Millones de usuarios medios por mes") + 
+  theme (axis.text.x = element_text(angle = 50, hjust = 1))
+
+
+```
+
+#### Velocidades medias
+
+Respecto a las velocidades medías, como cabía esperar que en los fines de semana, resulta mayor que en los días laborables. De manera similar, los meses con mayor velocidad media son julio y agosto. Es reseñable que mayo con una importante densidad de tráfico, es de los de mayor velocidad media probablemente por los días festivos en Madrid durante ese mes.  
+
+```{r}
+#Velocidades medias por dia de la semana
+
+dataEST_tfc %>%   group_by(diasem) %>%
+  summarize( vel = mean(velocidadMedia)) %>%
+  ggplot( aes(x = reorder(diasem, -vel), y = vel)) +
+   geom_col(color = 'blue', fill = 'blue') + 
+   xlab('Día Semana') + ylab('Velocidad media') + 
+   ggtitle(" Velocidad media por día de la semana") + 
+   geom_text(aes(label = round(vel,2)), position = position_dodge(width = 0.9),   size=3, vjust=-1, hjust=0.5 ,col="black")+ 
+  ylim(0,80)
+
+#Velocidades medias por mes
+
+dataEST_tfc %>%   group_by(mes) %>%
+  summarize( vel = mean(velocidadMedia)) %>%
+  ggplot( aes(x = reorder(mes, -vel), y = vel)) +
+   geom_col(color = 'blue', fill = 'blue') + 
+   xlab('Mes') + ylab('Velocidad media') + 
+   ggtitle(" Velocidad media por mes") + 
+   geom_text(aes(label = round(vel,2)), position = position_dodge(width = 0.9),   size=3, vjust=-1, hjust=0.5 ,col="black")+ 
+  ylim(0,80)+
+  theme (axis.text.x = element_text(angle = 50, hjust = 1))
+
+```
+
+#### Accidentes y personas atendidas
+
+Vamos a relacionar en un mismo gráfico los accidentes ocurridos a lo largo del año, junto al número de personas atendidas. En color rojo, se puede observar la distribución del número de accidentes a lo largo del año 2018, mientras que de color azul, se define el número de personas que precisaron asistencia médica.  
+
+Resulta curioso observar que únicamente en los primeros días de enero se invierte esa tendencia.
+
+
+
+```{r}
+
+dataEST_tfc %>% group_by(date_d) %>%
+  summarize(Total_Accid = n(), Total_atendidos = sum(atendidos)) %>%
+  ggplot+ 
+  geom_line( aes(x = date_d, y = Total_Accid), color = "red" ) +
+   geom_line(aes(x= date_d, y = Total_atendidos), alpha=0.5, color = 'blue') + 
+  xlab('Año') + ylab('Accidentes') + 
+  scale_y_continuous(sec.axis = (~./1), name="")+
+    ggtitle('Atendidos y accidentes en 2018') 
+
+```
+
+
+#### Días de la semana en las que se producen los accidentes.  
+
+Se analizan los días de la semana en que se producen más accidentes y más personas atendidas, y en ambos casos resulta significativa la presencia del viernes como día de mayor siniestralidad, frente a los días más baja que se dan en los fines de semana.  
+
+Según esto, y segun muestra la tabla realizada, resulta que la probabilidad de que los viernes el numero de accidentes respecto al millon de usuarios de Calle 30, es casi un 60% mayor que la sucedida en domingo.  
+
+```{r}
+
+#Accidentes por día de la semana
+
+dataEST_tfc %>%   group_by(diasem) %>%
+  summarize( Total_Accid = n()) %>%
+  ggplot( aes(x = reorder(diasem, -Total_Accid), y = Total_Accid)) +
+   geom_col(color = 'blue', fill = 'blue') + 
+  geom_text(aes(label = Total_Accid), 
+            position = position_dodge(width = 0.9), size=3, vjust=-1, hjust=0.5 ,col="black")+
+   xlab('Día Semana') + ylab('Número de accidentes') + 
+   ggtitle(" Accidentes por Día de la semana") + 
+   ylim(0,500)
+
+
+# Probabilidad de accidente por millon de usuarios según día de la semana
+
+dataEST_tfc %>%   group_by(diasem) %>%   
+  summarize( 
+  usuarios = mean(UsuariosCalle30)/1000000, 
+  Total_Accid = n(), 
+  probab = round((Total_Accid / usuarios),2)) %>% 
+  arrange (desc(probab))
+
+
+#Atendidos por día de la semana
+
+dataEST_tfc %>%   group_by(diasem) %>%
+  summarize( Total_atendid = sum(atendidos)) %>%
+  ggplot( aes(x = reorder(diasem, -Total_atendid), y = Total_atendid)) +
+   geom_col(color = 'blue', fill = 'blue') + 
+  geom_text(aes(label = Total_atendid), 
+            position = position_dodge(width = 0.9), size=3, vjust=-1, hjust=0.5 ,col="black")+
+   xlab('Día Semana') + ylab('Número de atendidos') + 
+   ggtitle(" Personas atendidas por día de la semana") + 
+   ylim(0,800)
+
+
+```
+
+#### Horas del día en las que se producen los accidentes y los atendidos.
+
+Tanto la frecuencia de accidentes y atendidos a lo largo del día discriminados por el rango horario tienen una distribución similar. Los accidentes y las personas atendidas, lo son fundamentalmente en las horas punta coincidentes con las entradas y salidas del trabajo. Así, puede observarse que con diferencia, las horas de la comida, 14 y 15 h, son las de mayor frecuencia de sinistreo, y de personas asistidas.
+
+```{r}
+
+
+dataEST_tfc %>%   group_by(hora_f) %>%
+  summarize( Total_Accid = n()) %>%
+  ggplot( aes(x =hora_f, y = Total_Accid) ) +
+   geom_col(color = 'blue', fill = 'blue') + 
+   xlab('Hora del día') + ylab('Número de accidentes') + 
+   ggtitle(" Accidentes clasificados por la hora del día")+
+  geom_text(aes(label = Total_Accid), position = position_dodge(width = 0.9), size=3, vjust=-1, hjust=0.5 ,col="black")+
+  ylim(0,250)
+
+
+dataEST_tfc %>%   group_by(hora_f) %>%
+  summarize( Total_atendidos = sum(atendidos)) %>%
+  ggplot( aes(x =hora_f, y = Total_atendidos) ) +
+   geom_col(color = 'blue', fill = 'blue') + 
+   xlab('Hora del día') + ylab('Número de atendidos') + 
+   ggtitle(" Atendidos clasificados por la hora del día") +
+   geom_text(aes(label = Total_atendidos),  position = position_dodge(width = 0.9), size=3, vjust=-1, hjust=0.5 ,col="black") +
+   ylim(0,400)
+
+
+```
+
+#### Efecto cruzado entre hora y día de la semana.
+
+Resulta interesante observar el efecto cruzado entre días de la semana y horas, donde claramente el mayor número de accidentes se registra a la salida del trabajo al mediodía de los viernes.  
+
+De igual manera, puede notarse que en las horas nocturnas del viernes noche (y primeras del sábado, que corresponde a la misma noche), se producen un número superior de accidentes frente a cualquier otro día.
+
+
+```{r}
+dataEST_tfc %>%   group_by(diasem, hora_f) %>%
+  summarize( Total_Accid = n()) %>%
+  ggplot( aes(x = hora_f, y = Total_Accid) ) +
+   geom_col(color = 'blue', fill = 'blue') + 
+   facet_wrap( ~ diasem) +
+   xlab('Hora del día') + ylab('Número de Accidentes') + 
+   ggtitle('Accidentes por día de la semana y por hora del día') 
+
+
+```
+
+También se analiza el número de accidentes según el tipo de día sea laborable o no. En este caso, el número de accidentes es mucho mayor los días laborables que los no laborables. Unicamente resultan parejos en las horas nocturnas, donde se deduce que los fines de semana prácticamente iguales accidentes que los laborables (proporción 2 sobre 5).  
+
+
+```{r}
+
+  dataEST_tfc %>% group_by(hora_f, laborable_f) %>%
+  summarize( Total_Accid = n()) %>% 
+  ggplot(aes(x=hora_f, y=Total_Accid, fill= laborable_f)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      ggtitle("Accidentes según tipo de día") +
+      labs(x="Hora del día", y="Número de accidentes") + 
+      scale_fill_discrete(name="", labels=c("no laborable","Laborable")) +
+      theme(legend.position = "top")
+
+
+```
+
+## **Variable respuesta**
+
+Hasta este momento se ha estudiado el numero de personas que necisaton asistencia médica en los accidentes registrados. Ahora, se estudiará la variable que hemos elegido para respuesta en este estudio.  
+Dependiente del número de asistidos en accidente, se crea la variable "af" que toma el valor 1, "si_asistencia" si es mayor que cero.
+
+
+```{r}
+ggplot(data = dataEST_tfc, aes(x = af, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = "Asistencia a heridos") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+#### Frecuencias
+
+```{r}
+# Tabla de frecuencias 
+table(dataEST_tfc$af)
+
+# Porcentaje
+prop.table(table(dataEST_tfc$af)) %>% round(digits = 2)
+```
+
+Esta relación entre casos de asistencia y no asistencia es importante al definir la utilidad de un modelo predictivo, ya que debe producirse un porcentaje de acierto superior a lo esperado por azar o a un determinado nivel basal. En los problemas de clasificación, el nivel basal se define como el obtenido si se asignasen todas las observaciones a la clase de mayor frecuencia, es decir, la moda.  
+
+En la base de datos de los accidentes , dado que el 77% de los accidentes requirieron asistencia médica, si se predijera que todos los accidentes resultaran con personas atendidas (si_asistencia) , el porcentaje de aciertos sería del 77%. Por este motivo, este es el porcentaje mínimo que los modelos predictivos deben obtener. 
+
+EPor tanto, en este caso, el porcentaje de aciertos debería ser superior al 76,52%.
+
+```{r}
+# Porcentaje de aciertos si se predice para todas las observaciones que si se precisa asistencia.
+n_observaciones <- nrow(dataEST_tfc)
+predicciones <- rep(x = "si_asistencia",  n_observaciones)
+mean(predicciones == dataEST_tfc$af) * 100
+```
+
+### Distribución de variables continuas
+
+Vamos a analizar algunas variables continuas
+
+#### Vehículos implicados
+
+Puede observarse que mayoritariamente los vehículos implicados en accidente resulta ser dos. Además los casos es que solo hay un vehículo, posiblemente salidas de vía, tienen menos casos de asistencia.
+
+```{r}
+
+library(ggpubr)
+p1 <- ggplot(data = dataEST_tfc, aes(x = VEH, fill = af)) +
+      geom_density(alpha = 0.5) +
+      scale_fill_manual(values = c("gray50", "orangered2")) +
+      geom_rug(aes(color = af), alpha = 0.5) +
+      scale_color_manual(values = c("gray50", "orangered2")) +
+      theme_bw()
+p2 <- ggplot(data = dataEST_tfc, aes(x = af, y = VEH, color = af)) +
+      geom_boxplot(outlier.shape = NA) +
+      geom_jitter(alpha = 0.3, width = 0.15) +
+      scale_color_manual(values = c("gray50", "orangered2")) +
+      theme_bw()
+final_plot <- ggarrange(p1, p2, legend = "top")
+final_plot <- annotate_figure(final_plot, top = text_grob("Vehículos implicados", size = 15))
+final_plot
+
+```
+#### Usuarios Calle30
+
+Respecto a los usuarios de Calle30, la gráfica muestra como cuando los usuarios son elevados hay más casos de asistencia. De hecho, en la franja de usuarios entre 800.000 y 1.000.000 de usuarios, hay más casos de no asistencia. 
+
+```{r}
+
+library(ggpubr)
+p1 <- ggplot(data = dataEST_tfc, aes(x = UsuariosCalle30, fill = af)) +
+      geom_density(alpha = 0.5) +
+      scale_fill_manual(values = c("gray50", "orangered2")) +
+      geom_rug(aes(color = af), alpha = 0.5) +
+      scale_color_manual(values = c("gray50", "orangered2")) +
+      theme_bw()
+p2 <- ggplot(data = dataEST_tfc, aes(x = af, y = UsuariosCalle30, color = af)) +
+      geom_boxplot(outlier.shape = NA) +
+      geom_jitter(alpha = 0.3, width = 0.15) +
+      scale_color_manual(values = c("gray50", "orangered2")) +
+      theme_bw()
+final_plot <- ggarrange(p1, p2, legend = "top")
+final_plot <- annotate_figure(final_plot, top = text_grob("Usuarios Calle30", size = 15))
+final_plot
+```
+#### Temperatura.  
+
+En relación a la temperatura, puede observarse que a temperaturas más bajas se registran más casos de asistencia, respecto a cuando se dan temperaturas altas. En este sentido en gráfico de cajas se observa que la temperatura media en los casos en que no es necesaria la asistencia en mayor significativamente respecto en los casos en que es necesaria.
+
+```{r}
+
+library(ggpubr)
+p1 <- ggplot(data = dataEST_tfc, aes(x = temperat, fill = af)) +
+      geom_density(alpha = 0.5) +
+      scale_fill_manual(values = c("gray50", "orangered2")) +
+      geom_rug(aes(color = af), alpha = 0.5) +
+      scale_color_manual(values = c("gray50", "orangered2")) +
+      theme_bw()
+p2 <- ggplot(data = dataEST_tfc, aes(x = af, y = temperat, color = af)) +
+      geom_boxplot(outlier.shape = NA) +
+      geom_jitter(alpha = 0.3, width = 0.15) +
+      scale_color_manual(values = c("gray50", "orangered2")) +
+      theme_bw()
+final_plot <- ggarrange(p1, p2, legend = "top")
+final_plot <- annotate_figure(final_plot, top = text_grob("Temperatura", size = 15))
+final_plot
+```
+
+#### Lluvia.  
+
+El efecto de la lluvia aparece distorsionado al ser predominante la frecuencia cero correspondiente a días que no llueve. Aunque probablemente la falta de observaciones de días lluviosos no permitan sacar conclusiones ciertas, parece que la gráfica en días de poca lluvia o días de mucha para Madrid, resulta con menos atenciones médicas que las que podría estimarse inicialmente. Porbablemente haya más accidentes, pero de menor gravedad y por tanto con menor asistencia de heridos.  
+
+```{r}
+
+library(ggpubr)
+p1 <- ggplot(data = dataEST_tfc, aes(x = precipit, fill = af)) +
+      geom_density(alpha = 0.5) +
+      scale_fill_manual(values = c("gray50", "orangered2")) +
+      geom_rug(aes(color = af), alpha = 0.5) +
+      scale_color_manual(values = c("gray50", "orangered2")) +
+      theme_bw()
+p2 <- ggplot(data = dataEST_tfc, aes(x = af, y = precipit, color = af)) +
+      geom_boxplot(outlier.shape = NA) +
+      geom_jitter(alpha = 0.3, width = 0.15) +
+      scale_color_manual(values = c("gray50", "orangered2")) +
+      theme_bw()
+final_plot <- ggarrange(p1, p2, legend = "top")
+final_plot <- annotate_figure(final_plot, top = text_grob("Precipitaciones", size = 15))
+final_plot
+```
+
+### Estadísticos y correlaciones.  
+
+Según lo analizado con las gráficas, se incluyen los estadísticos de la variable temperatura y usuarios de Calle 30.
+
+```{r}
+# Estadísticos de la temperatura entre los asistidos
+dataEST_tfc %>% filter(!is.na(temperat)) %>% group_by(af) %>%
+          summarise(media = mean(temperat),
+                    mediana = median(temperat),
+                    min = min(temperat),
+                    max = max(temperat))
+```
+
+
+```{r}
+# Estadísticos de los usuarios entre los asistidos
+dataEST_tfc %>% filter(!is.na(VEH)) %>% group_by(af) %>%
+          summarise(media = mean(VEH),
+                    mediana = median(VEH),
+                    min = min(VEH),
+                    max = max(VEH))
+```
+
+En cuanto a la matriz de correlación entre las variables, claramente puede observarse que la variable Usuarios está muy correlacionada con la velocidad media, por lo que eliminaremos esta última variable de dataset que aplicaremos a los algoritmos.
+
+```{r}
+
+cor(dataEST_tfc[, c(7,20:21,27:29)])
+
+corrgram (cor(dataEST_tfc[, c(7,20:21,27:29)]), main="Correlaciones entre variables", lower.panel=panel.cor, upper.panel=panel.pie, labels = c("vehiculos","usuarios","vmedia","temperatura", "precipit", "viento"))
+
+
+
+
+```
+
+### Distribución de variables cualitativas
+
+Respecto a las variables cualitativas se presenta una gráfica que compara la ocurrencia de los casos de asistencia y no asistencia en relación a esa variable. Para definir mejor esa relación, se realiza una tabla sobre lo que resulta numericamente para analizar mejor esa proporciones y determinar los factores que más intervienen en la variable respuesta. 
+
+#### Dias de la semana
+
+No hay una diferencia importante entre el numero de accidentes con casos de asistidos y no, excepto en el sábado donde parecen reducirse los casos de asistencia.
+
+```{r}
+ggplot(data = dataEST_tfc, aes(x = diasem, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = "Dias de la semana") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+prop.table(table(dataEST_tfc$diasem, dataEST_tfc$af), margin = 1) %>% round(digits = 2)
+
+
+```
+
+#### Meses
+
+En cuanto a la distribución de casos de asistencia respecto los meses del año, se observa en los meses de octubre a abril (excepto enero y noviembre) hay prácticamente intervención de asistencia médica en todos los accidentes. En el extremo contrario, se producen reducidas asistencias los meses de enero y julio, ambos por debajo del 50% de ocurrencia.  
+
+```{r}
+ggplot(data = dataEST_tfc, aes(x = mes, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = "Meses del año") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+prop.table(table(dataEST_tfc$mes, dataEST_tfc$af), margin = 1) %>% round(digits = 2)
+
+
+```
+
+#### Días laborables.
+
+En este caso, aunque resultan ligeramente superiores los casos de asistencia, no puede obtenerse ninguna conclusión destacable.
+
+```{r}
+ggplot(data = dataEST_tfc, aes(x = laborable_f, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = " Días laborables / no laborables") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+prop.table(table(dataEST_tfc$laborable_f, dataEST_tfc$af), margin = 1) %>% round(digits = 2)
+
+
+```
+
+#### Franja horaria.  
+
+Resultan algunas franjas horarias donde se registran mayores indices de asistencia, que parecen ser el inicio de la noche y primera hora de la mañana.
+
+```{r}
+ggplot(data = dataEST_tfc, aes(x = hora_f, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = " Franja horaria") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+prop.table(table(dataEST_tfc$hora_f, dataEST_tfc$af), margin = 1) %>% round(digits = 2)
+
+
+```
+
+
+
+#### Puntos kilómetricos dentro del anillo
+
+Para la determinación de la ocurrencia de los accidentes y debido a no ser posible la identificación de la situación de los puntos kilométricos se ha filtrado la base entre los puntos que corresponden al anillo y de los se tiene clara su situación. En este caso aparecen unos pk de valor 90 (con un 100% de asistencia requerida), 98 y 99 que no se sabe a que corresponde.  
+
+Aunque hay mucha variedad entre la asitencia entre los distintos puntos kilométricos existe algun caso como el pk.27 donde se producen más casos de no asistencia médica.
+
+Posteriormente se incluye un geovisor para determinar la ubicación de los puntos kilométricos.  
+
+```{r}
+
+
+dataEST_tfc %>% filter((codlet=="NC"|codlet=="XC"|codlet=="NL"|codlet=="XL")) %>% ggplot(aes(x = pks, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = " Puntos kilométricos") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+prop.table(table(dataEST_tfc$pks, dataEST_tfc$af), margin = 1) %>% round(digits = 2)
+
+
+```
+
+##### Visor geografico de accidentabilidad en anillo de Calle 30.
+
+Se presenta un visor geográfico, donde se han localizado el número de accidentes en cada punto kilométrico del anillo, señalandose el radio del mismo en proporción al número de accidentes.
+
+Previamente se ha realizado una tabla, ordenada por la relación entre personas asistidas y número de accidentes, según los puntos kilométricos. Aunque el pk.21 aparece con el mayor valor de esta relación, puede observarse que con una relación ligeramente inferior, la ocurrencia de accidentes en el pk.8 es seis veces superior.
+
+
+```{r}
+
+#accidentes en el anillo
+data_pk_NX <- dataEST_tfc %>% filter(codlet=="NC"|codlet=="XC"|codlet=="NL"|codlet=="XL") %>% group_by(pks) %>% summarize(Total_Accid =n(), Total_asistidos = sum(atendidos), relacion= Total_asistidos/Total_Accid) %>% arrange (desc(relacion))
+
+data_pk_NX
+
+
+```
+
+Importación de archivo excel que relaciona puntos kilométricos y coordenadas geográficas.  
+
+
+```{r}
+
+library(readxl)
+pks <- read_excel("C:/mio/BD_uned/MOD_16_TFM/ideas/M30/Limites_Conservacion_Madrid_Calle_30/pks_mv.xlsx")
+View(pks)
+
+```
+
+Incorporación de coordenadas de coordenadas a la tabla.
+
+```{r}
+
+data_pk_NX$pknum <- as.integer(data_pk_NX$pks)
+data_pk_NX <- merge(data_pk_NX,
+                    pks,
+                    by.x = "pknum",
+                    by.y = "gid",
+                    all.x = TRUE
+                    )
+
+#Al no tener las coordenadas del pk 0 quitamos ese valor 
+
+data_pk_NX_sin0 <- data_pk_NX %>% filter (pknum > 0)
+
+```
+
+Se ha utilizado el formato spdf (Spatial [point|line|polygon]data.frame)para los datos espaciales. Se trata de una clase S4 que contiene diferentes slots. El slot ‘data’ es un data.frame con los atributos, y otros slots contienen la información espacial (coordenadas, bounding box, sistema de referencia). Tiene la ventaja de tener separado el data.frame del resto de elementos espaciales, por lo que es fácil trabajar la parte de atributos de forma aislada.  
+
+
+
+```{r}
+
+# Create data frame of only longitude and latitude values
+coords <- select(data_pk_NX_sin0, coord_x, coord_y)
+datacol <- select (data_pk_NX_sin0, pknum, Total_Accid, name)
+
+# Create SpatialPoints object with coords and CRS
+#pks_spdf <- SpatialPoints(coords = coords,
+#                          data= data_pk_NX_sin0[,.(pknum,Total_Accid, name)],
+#                           proj4string = CRS("+proj=longlat +datum=WGS84"))
+
+
+pks_spdf <- sp::SpatialPointsDataFrame(coords = coords, 
+                                      data = datacol,
+                                      proj4string = CRS("+proj=longlat +datum=WGS84"))
+
+# Exploring sf structure
+str(pks_spdf)
+pks_spdf
+
+# Plotting the result
+plot(pks_spdf)
+
+```
+
+##### Geovisor o mapa interactivo  
+
+Se usa el paquete leaflet para R para crear el geovisor donde se representan los puntos kilométricos y se representan con un tamaño proporcional al número de accidentes. 
+
+
+```{r}
+
+## 1.Creating the map
+
+# Starting leaflet instance and saving it into a variable
+m = leaflet(options = leafletOptions(zoomControl = TRUE)) # adds / removes zoom control
+
+## 2. Setting initial view
+m = setView(m, lng = -3.703, lat = 40.416, zoom = 12) # Setting the initial view (Madrid)
+
+## Adding base layers
+# Toner: light layer for easy navigation
+m = addProviderTiles(m, "Stamen.Toner", group = "Toner")
+# Open Street Map
+m = addTiles(m, group = "OpenStreetMap",
+               attribution = "OSM")
+# Satelite imagery
+m = addProviderTiles(m, "Esri.WorldImagery", group = "Satélite")
+# IGN layer with post code boundaries (from http://www.ign.es/wms-inspire/ign-base?request=GetCapabilities)
+m = addWMSTiles(m,
+                  "http://www.ign.es/wms-inspire/ign-base?SERVICE=WMS&",
+                  options = WMSTileOptions(), layers = c("IGNBaseTodo", "codigo-postal"),
+                  group ="Código postal", attribution = "IGN")
+# Catastro layer 
+m = addWMSTiles(map = m,
+                  baseUrl = "http://ovc.catastro.meh.es/cartografia/INSPIRE/spadgcwms.aspx",
+                  options = WMSTileOptions(styles = c("elfcadastre", "elfcadastre",
+                                                      "elfcadastre", "number.elfcadastre", "elfcadastre",
+                                                      "elfcadastre", "elfcadastre")), 
+                  layers = c("cp.cadastralparcel","bu.building","bu.buildingpart",
+                             "ad.address","au.administrativeboundary",
+                             "cp.cadastralzoning","au.administrativeunit"),
+                  group = "Catastro", attribution = "D.G. del Catastro")
+
+
+## 3. Adding overlay layers
+
+m = addCircleMarkers(m, 
+                       data = pks_spdf, 
+                       popup = paste0("<strong> p.k.: </strong>", pks_spdf$name, " accidentes: ", pks_spdf$Total_Accid),
+                       radius = (pks_spdf$Total_Accid)/10, 
+                       stroke = TRUE,
+                       fillOpacity = 1, 
+                       fillColor = '#00bfff',
+                       color = '#00bfff',
+                       group = "accidentes",
+                       
+                      )
+
+
+## 4. Adding scale bar
+m = addScaleBar(m, position = c("bottomleft"), options = scaleBarOptions(maxWidth = 100, metric = TRUE, imperial = FALSE, updateWhenIdle = TRUE))
+
+
+## 5. Adding measure tool
+m = addMeasure(m, position = "bottomleft",
+                 primaryLengthUnit = "meters",
+                 primaryAreaUnit = "sqmeters",
+                 activeColor = "#3D535D",
+                 completedColor = "#7D4479",
+                 localization='es')
+  
+## 6. Adding layers control
+m = addLayersControl(m,
+                     baseGroups = c('Toner', 'OSM', 'Satélite', 'Código postal','Catastro'),
+                     overlayGroups = c('accidentes'))
+
+## 7. View the map
+m
+
+```
+
+Efectivamente según los datos obtenidos anteriormente, el punto kilométrico pk.8 responde a la mayor siniestrabilidad. En realidad, la zona comprendida entre el 7 y el 11 es la zona de mayor número de accidentes en la Calle 30.  
+
+
+#### Estado de la circulación
+
+No parece observarse discriminación respecto a la variable respuesta.
+
+```{r}
+ggplot(data = dataEST_tfc, aes(x = CIRCULACION_f, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = " Estado de la circulación") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+prop.table(table(dataEST_tfc$CIRCULACION_f, dataEST_tfc$af), margin = 1) %>% round(digits = 2)
+
+```
+
+#### Estado del firme.
+
+No puede tenerse consideración de la menor asistencia en los casos del estado del firme helado y otros (no se sabe a que corresponde) debido a la ínfima frecuencia de ocurrencia.
+
+```{r}
+ggplot(data = dataEST_tfc, aes(x = ESTADO_f, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = " Estado del firme") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+prop.table(table(dataEST_tfc$ESTADO_f, dataEST_tfc$af), margin = 1) %>% round(digits = 2)
+
+
+
+```
+#### Carretera
+
+Respecto a la variable carretera, sí puede observarse mayores frecuencias de asistencia especialmente en el acceso de la A4 (carretera de Andalucía), en la A2 (carretera de Barcelona) y M607 (carretera de Colmenar). En el caso contrario, la M500 (Carretera de Castilla) es condiferencia la que produce menor numero de atenciones.  
+
+
+
+```{r}
+ggplot(data = dataEST_tfc, aes(x = CARRETERA_f, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = " Zonas de calle30") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+prop.table(table(dataEST_tfc$CARRETERA_f, dataEST_tfc$af), margin = 1) %>% round(digits = 2)
+
+
+```
+
+#### Condiciones climatológicas
+
+Aunque debido a la infima frecuencia que tienen las condiciones climatológicas especialmente adversas como viento, niebla y nieve no pueden sacarse conclusiones definitivas, sí parece que la ocurrencia de intervenciones de asistencia son mayores en esos casos.  
+
+
+```{r}
+ggplot(data = dataEST_tfc, aes(x = ATMOSF_f, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = " Condiciones climatológicas") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+
+prop.table(table(dataEST_tfc$ATMOSF_f, dataEST_tfc$af), margin = 1) %>% round(digits = 2)
+
+
+
+```
+
+#### Túnel/superficie
+
+No parece tener influencia respecto a proporción de asistencias.
+
+```{r}
+ggplot(data = dataEST_tfc, aes(x = enlace_f, y = ..count.., fill = af)) +
+  geom_bar() +
+  scale_fill_manual(values = c("gray50", "orangered2")) +
+  labs(title = " Tunel / superficie ") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+
+prop.table(table(dataEST_tfc$enlace_f, dataEST_tfc$af), margin = 1) %>% round(digits = 2)
+
+```
+
+### Tabla días
+
+Para terminar el análisis de variables, se ha realizado un dataset donde se reune la información diaria de accidentes, que permiten conocer días de mayor accidentabilidad u otros factores agrupados. 
+
+
+```{r}
+
+dataEST_365 <- dataEST_tfc %>% select(date_d, laborable_f, diasem, atendidos, UsuariosCalle30, velocidadMedia, temperat, precipit, viento, VEH) %>% group_by(date_d)%>% summarize(accidentes = n(), atendidos_dia = sum(atendidos), Usuarios = mean(UsuariosCalle30), Vmedia= mean(velocidadMedia), Tmedia = mean(temperat), Lluvia = sum(precipit), Vviento = mean(viento), vehiculos_impl = sum(VEH))
+
+dataEST_365 <- dataEST_tfc %>% select(date_d, laborable_f, diasem, atendidos, UsuariosCalle30, temperat, precipit, viento, VEH) %>% group_by(date_d)%>% summarize(accidentes = n(), atendidos_dia = sum(atendidos), Usuarios = mean(UsuariosCalle30), Tmedia = mean(temperat), Lluvia = sum(precipit), Vviento = mean(viento), vehiculos_impl = sum(VEH))
+
+dataEST_365f <- merge(dataEST_365, festivos, by= "date_d", all.x = TRUE)
+
+dataEST_365f$diasem <- wday(dataEST_365$date_d, label = TRUE, abbr = FALSE)
+
+
+# Fines de semana
+dataEST_365f$finsem <- ifelse (dataEST_365f$diasem == "sábado"|dataEST_365f$diasem == "domingo", "FIN","WD")
+
+dataEST_365f$tipo_fest <- factor(dataEST_365f$tipo_fest, levels = c("FL","FN","FR","NO"))
+
+dataEST_365f$tipo_fest[is.na(dataEST_365f$tipo_fest)] <- "NO"
+
+dataEST_365f <- dataEST_365f %>% mutate (laborable = ifelse (finsem =="FIN"|tipo_fest != "NO", 1,2))
+
+dataEST_365f$laborable_f <- as.factor(dataEST_365f$laborable)
+
+dataEST_365f$laborable_f <- factor(dataEST_365f$laborable, levels = c(1,2),
+                              labels = c("No_laborable","laborable"))
+
+
+```
+
+
+**Días con más accidentes**
+
+Parece observarse que los días de mayor ocurrencia de accidentes son días de elevadas precipitaciones.  
+
+
+```{r}
+dataEST_365f %>% select(date_d, accidentes, atendidos_dia, Usuarios, Tmedia, Lluvia, Vviento, vehiculos_impl, laborable_f)%>%
+   top_n(n= 10, accidentes) %>% arrange(desc(accidentes))
+
+```
+
+**Días con más personas atendidas**
+
+Sigue una distribución parecida al caso de los accidentes, aunque en este caso todos corresponden a días laborables, especialmente en viernes.
+
+
+```{r}
+dataEST_365f %>% select(date_d, accidentes, atendidos_dia, Usuarios, Tmedia, Lluvia, Vviento, vehiculos_impl, laborable_f)%>%
+   top_n(n= 10, atendidos_dia) %>% arrange(desc(atendidos_dia))
+
+```
+
+# Selección de variables.  
+
+### Importancia de las variables
+
+La representación gráfica de la distribución de las variables en función de si se preciso asistencia o no, ayuda a tener una idea de qué variables pueden ser buenos predictores para el modelo y cuales no aportan información o la que aportan es redundante.   
+
+Si dos variables numéricas están muy correlacionadas, añaden información redundante al modelo, por lo tanto, no conviene incorporar ambas. Esto ha sucedido en el caso de los usuarios de la Calle 30 y la velocidad media, por lo que se procederá a eliminar esta última. 
+
+Por otro lado, se comprobará si una variable tiene varianza igual o próxima a cero, es decir, esto sucede si tiene prácticamente el  mismo valor para todas las observaciones, con lo que se añade al modelo más ruido que información, por lo que suele ser conveniente excluirla.
+
+Si alguno de los niveles de una variable cualitativa tiene muy pocas observaciones en comparación a los otros niveles, puede ocurrir que, durante la validación cruzada o bootstrapping, algunas particiones no contengan ninguna observación de dicha clase (varianza cero), lo que puede dar lugar a errores. 
+
+Aunque se vió anteriormente con el cuadro de correlaciones, estudiemos la relación entre UsuariosCalle30 y velocidad media en una gráfica.
+
+```{r}
+cor.test(x = dataEST_tfc$UsuariosCalle30, y = dataEST_tfc$velocidadMedia, method = "pearson")
+
+ggplot(data = dataEST_tfc, aes(x = velocidadMedia, y = log(UsuariosCalle30))) +
+  geom_point(color = "gray30") +
+  geom_smooth(color = "firebrick") 
+  
+```
+
+Analizamos igualmente la correlación entre Usuarios y precipitaciones, entendiendo que podría haber mayor número de usuarios en días lluviosos, pero la poca frecuencia de días con lluvia no nos permite concretar esa correlación.
+
+```{r}
+cor.test(x = dataEST_tfc$UsuariosCalle30, y = dataEST_tfc$precipit, method = "pearson")
+
+ggplot(data = dataEST_tfc, aes(x = precipit, y = log(UsuariosCalle30))) +
+  geom_point(color = "gray30") +
+  geom_smooth(color = "firebrick") +
+  theme_bw()
+```
+
+Aplicaremos **Random Forest** como estrategia para analizar la importancia de variables.
+
+```{r}
+
+
+datos_rf <- dataEST_tfc %>%
+            select(-anio, -date_d, -VEH, -TUR, -MOT, -PES, -UsuariosCalle30, -velocidadMedia, -distanciaMediaRecorrida, -temperat, -precipit, -atendidos, -ID, -laborable) %>%
+            na.omit()
+datos_rf <- map_if(.x = datos_rf, .p = is.character, .f = as.factor) %>%
+            as.data.frame()
+modelo_randforest <- randomForest(formula = af ~ . ,
+                                  data = na.omit(datos_rf),
+                                  mtry = 5,
+                                  importance = TRUE, 
+                                  ntree = 1000) 
+importancia <- as.data.frame(modelo_randforest$importance)
+importancia <- rownames_to_column(importancia,var = "variable")
+
+p1 <- ggplot(data = importancia, aes(x = reorder(variable, MeanDecreaseAccuracy),
+                               y = MeanDecreaseAccuracy,
+                               fill = MeanDecreaseAccuracy)) +
+      labs(x = "variable", title = "Reducción de Accuracy") +
+      geom_col() +
+      coord_flip() +
+      theme_bw() +
+      theme(legend.position = "bottom")
+
+p2 <- ggplot(data = importancia, aes(x = reorder(variable, MeanDecreaseGini),
+                               y = MeanDecreaseGini,
+                               fill = MeanDecreaseGini)) +
+      labs(x = "variable", title = "Reducción de pureza (Gini)") +
+      geom_col() +
+      coord_flip() +
+      theme_bw() +
+      theme(legend.position = "bottom")
+ggarrange(p1, p2)
+
+
+```
+
+Otro método para valorar la importacia de las variables es el **Contraste de proporciones**.
+
+Para la identificación de potenciales predictores cualitativos, es interesante encontrar las variables y niveles de las mismas que muestran una proporción de no atendidos alejada de lo esperado por el nivel basal, en este caso el 23%. Este porcentaje se corresponde con la proporción de casos con "no asistidos" respecto al total de accidentes, es decir, el valor esperado si no existiese relación entre la variable y el caso de no asistencia necesaria. 
+
+
+```{r}
+# Se excluyen las variables continuas y las cualitativas que no agrupan a los
+# accidentes. 
+datos_cualitativos <- dataEST_tfc %>%
+                      select(-anio, -date_d, -VEH, -TUR, -MOT, -PES, -UsuariosCalle30, -velocidadMedia, -distanciaMediaRecorrida, -temperat, -precipit, -atendidos, -ID, -laborable)
+
+datos_cualitativos_tidy <- datos_cualitativos %>%
+                           gather(key = "variable", value = "grupo",-af)
+
+# Se eliminan los valores NA para que no se interpreten como un grupo
+datos_cualitativos_tidy <- datos_cualitativos_tidy %>% filter(!is.na(grupo))
+  
+# Se añade un identificador formado por el nombre de la variable y el grupo 
+datos_cualitativos_tidy <- datos_cualitativos_tidy %>%
+                           mutate(variable_grupo = paste(variable, grupo, sep = "_"))
+
+
+```
+
+
+Funciones
+
+```{r warning=FALSE, message=FALSE}
+
+# Función que calcula el test de proporciones para la columna "no_asistencia" de un df
+test_proporcion <- function(df){
+  asistidos <- sum(df$af == "si_asistencia") 
+  no_asistidos     <- sum(df$af == "no_asistencia")
+  n_total <- asistidos + no_asistidos
+  test <- prop.test(x = asistidos, n = n_total, p = 0.23)
+  prop_asistidos <- asistidos / n_total
+  return(data.frame(p_value = test$p.value, prop_asistidos))
+}
+
+# Se agrupan los datos por "variable_grupo" y se aplica a cada grupo la función
+# test_proporcion()
+analisis_prop <- datos_cualitativos_tidy %>%
+                 group_by(variable_grupo) %>%
+                 nest() %>%
+                 arrange(variable_grupo) %>%
+                 mutate(prop_test = map(.x = data, .f = test_proporcion)) %>%
+                 unnest(prop_test) %>%
+                 arrange(p_value) %>% 
+                 select(variable_grupo,p_value, prop_asistidos)
+analisis_prop 
+
+```
+
+Probabilidad
+
+```{r}
+# Representación gráfica de la distribución de los 6 grupos con menor p-value
+top6_grupos <- analisis_prop %>% pull(variable_grupo) %>% head(6)
+
+# Se crea una función que, dados un dataframe y el nombre de un grupo, genere la
+# representación gráfica de supervivientes y no supervivientes.
+plot_grupo <- function(grupo, df, threshold_line = 0.23){
+
+  p <- ggplot(data = df, aes(x = 1, y = ..count.., fill = af)) +
+            geom_bar() +
+            scale_fill_manual(values = c("gray50", "orangered2")) +
+            # Se añade una línea horizontal en el nivel basal
+            geom_hline(yintercept = nrow(df) * threshold_line,
+                       linetype = "dashed") +
+            labs(title = grupo) +
+            theme_bw() +
+            theme(legend.position = "bottom",
+                  axis.text.x = element_blank(),
+                  axis.title.x = element_blank(),
+                  axis.ticks.x = element_blank())
+  return(p)
+}
+
+datos_graficos <- datos_cualitativos_tidy %>%
+                  filter(variable_grupo %in% top6_grupos) %>%
+                  group_by(variable_grupo) %>%
+                  nest() %>%
+                  arrange(variable_grupo)
+
+plots <- map2(datos_graficos$variable_grupo, .y = datos_graficos$data,
+              .f = plot_grupo)
+
+ggarrange(plotlist = plots, common.legend = TRUE)
+
+```
+
+La tabla anterior ofrece los valores p-value ordenados de menor a mayor y, cada uno de los posibles grupos simples en los que se puede diferenciar a los accidentes. Cuanto menor es el p-value de un grupo, mayor la evidencia de que la proporción de accidentes "sin asistencia" en dicho grupo se aleja de lo esperado (0.23), tanto por encima como por debajo. Este método aísla cada variable por separado.
+
+Este análisis tiene como objetivo destacar posibles relaciones entre las variables disponibles y la "no asistencia" en los accidentes, sin embargo, no debe de emplearse como una selección de predictores. 
+
+
+### Variables con varianza próxima a cero
+
+No se deben incluir en el modelo predictores que contengan un único valor (cero-varianza) ya que no aportan información. Tampoco es conveniente incluir predictores que tengan una varianza próxima a cero.
+
+La función nearZeroVar() del paquete caret y step_nzv() del paquete recipe identifican como predictores potencialmente problemáticos aquellos que tienen un único valor (cero varianza), expresando:
+
+Ratio de frecuencias: ratio entre la frecuencia del valor más común y la frecuencia del segundo valor más común. Este ratio tiende a 1 si las frecuencias están equidistribuidas.
+
+Porcentaje de valores únicos: número de valores únicos dividido entre el total de muestras (multiplicado por 100). Este porcentaje se aproxima a cero cuanto mayor es la variedad de valores.
+
+Puede verse que en entre los predictores incluidos en el modelo, no se detecta ninguno con varianza cero o próxima a cero.
+
+
+```{r}
+
+dataEST_tfc %>% select(CIRCULACION_f, ESTADO_f, ATMOSF_f, enlace_f, diasem, mes, pks, codlet, hora_f, laborable_f) %>%
+          nearZeroVar(saveMetrics = TRUE)
+```
+
+## Modelos predictivos.
+
+Para comparar los distintos algoritmos y métodos de Predicción se utilizará la librería caret. Este paquete, desarrollado por Max Kuhn,  El paquete caret, desarrollado por Max Kuhn, posee una interfaz que puede usarse sin salir de R y que permite la utilización de diferentes método de diferentes paquetes, y que permite agrupar las fases de preprocesado, entrenamiento y validaciónes de los modelos predictivos.
+
+
+#### Archivo para modelo
+
+```{r}
+
+data_mod <- dataEST_tfc [, c(2:3,5,7,11:15,18,20,24,26:29,17)]
+
+table(data_mod$af)
+sapply(data_mod, function(x) sum(is.na(x)))
+
+```
+
+#### Muestras de entrenamiento y validación
+
+```{r}
+set.seed(107)
+
+# Índice de partición
+Indice_Particion <- createDataPartition(data_mod$af, p = 0.80, list = FALSE)
+
+# Muestras de entrenamiento y test
+entrenamiento <- data_mod[ Indice_Particion, ]
+validacion <- data_mod[ -Indice_Particion, ]
+
+```
+
+#### Hiper-parámetros caret
+
+```{r}
+fiveStats = function(...) c (twoClassSummary(...), defaultSummary(...))
+control <- trainControl(method = "repeatedcv", 
+                        number = 5,
+                        repeats = 1, 
+                        classProbs = TRUE, 
+                        summaryFunction = fiveStats,
+                        returnResamp = "final",
+                        allowParallel = TRUE)
+metrica <- "ROC"
+```
+
+
+## Desarrollo de los diferentes algoritmos
+
+### CART
+
+```{r}
+set.seed(7)
+cartGrid <-  expand.grid(.cp=c(0, 0.05,0.5, 0.1))
+clusterCPU <- makePSOCKcluster(detectCores()-1)
+registerDoParallel(clusterCPU)
+fit.cart <- train(af ~ ., data = entrenamiento, 
+             method = "rpart", 
+             metric = metrica, 
+             preProc = c("center", "scale"), 
+             trControl = control, 
+             tuneGrid = cartGrid
+             )
+stopCluster(clusterCPU)
+fit.cart
+```
+
+### K-VECINOS
+
+```{r}
+set.seed(7)
+knnGrid <- expand.grid(.k = c(3, 5, 10, 20))
+
+clusterCPU <- makePSOCKcluster(detectCores()-1)
+registerDoParallel(clusterCPU)
+fit.knn <- train(af ~ ., data = entrenamiento, 
+             method = "knn", 
+             metric = metrica, 
+             preProc = c("center", "scale"), 
+             trControl = control, 
+             tuneGrid = knnGrid
+             )
+
+stopCluster(clusterCPU)
+fit.knn
+```
+
+### RED NEURONAL (Perceptrón multicapa)
+
+```{r}
+set.seed(7)
+mlpGrid <-  expand.grid(size = 1:10)
+
+clusterCPU <- makePSOCKcluster(detectCores()-1)
+registerDoParallel(clusterCPU)
+fit.mlp <- train(af ~ ., data = entrenamiento, 
+              method = "mlp", 
+              metric = metrica, 
+              preProc = c("center", "scale"), 
+              trControl = control,
+              tuneGrid = mlpGrid)
+stopCluster(clusterCPU)
+fit.mlp
+
+```
+
+### MAQUINAS VECTORES SOPORTE GAUSIANA
+
+```{r}
+set.seed(7)
+svmGrid <-  expand.grid(sigma = 0.0133164846954976, C = 1)
+
+clusterCPU <- makePSOCKcluster(detectCores()-1)
+registerDoParallel(clusterCPU)
+fit.svm <- train(af ~ ., data = entrenamiento, 
+              method = "svmRadial", 
+              metric = metrica, 
+              preProc = c("center", "scale"), 
+              trControl = control,
+              tuneGrid = svmGrid)
+
+stopCluster(clusterCPU)
+fit.svm
+
+```
+
+### RANDOM FOREST
+
+```{r}
+
+rfGrid <- expand.grid(.mtry=c(50, 75, 100, 200))
+
+clusterCPU <- makePSOCKcluster(detectCores()-1)
+registerDoParallel(clusterCPU)
+fit.rf <- train(af ~ ., data = entrenamiento, 
+             method = "rf", 
+             metric = metrica, 
+             preProc = c("center", "scale"), 
+             trControl = control,
+             tuneGrid = rfGrid)
+stopCluster(clusterCPU)
+fit.rf
+
+```
+
+
+### GBM Stochastic Gradient Boosting
+
+```{r}
+
+#rfGrid <- expand.grid(.mtry=c(50, 75, 100, 200))
+set.seed(7)
+
+clusterCPU <- makePSOCKcluster(detectCores()-1)
+registerDoParallel(clusterCPU)
+fit.gbm <- train(af ~ ., data = entrenamiento, 
+             method = "gbm", 
+             metric = metrica, 
+             preProc = c("center", "scale"), 
+             trControl = control,
+             verbose=FALSE)
+stopCluster(clusterCPU)
+fit.gbm
+```
+
+
+### GBM eXtreme Gradient Boosting (xgbTree, xgbLinear)
+
+```{r}
+set.seed(7)
+
+clusterCPU <- makePSOCKcluster(detectCores()-1)
+registerDoParallel(clusterCPU)
+fit.xgbTree <- train(af ~ ., data = entrenamiento, 
+             method = "xgbTree", 
+             metric = metrica, 
+             preProc = c("center", "scale"), 
+             trControl = control,
+             verbose=FALSE)
+stopCluster(clusterCPU)
+fit.xgbTree
+```
+
+
+### MODELO BAGGING
+
+```{r}
+set.seed(7)
+#knnGrid <- expand.grid(.k = c(3, 5, 10, 20))
+
+clusterCPU <- makePSOCKcluster(detectCores()-1)
+registerDoParallel(clusterCPU)
+fit.bag <- train(af ~ ., data = entrenamiento, 
+             method = "treebag", 
+             metric = metrica, 
+             preProc = c("center", "scale"), 
+             trControl = control, 
+             nbagg=10)
+             
+
+stopCluster(clusterCPU)
+fit.bag
+
+```
+
+## Resultados Obtenidos
+
+### ARBOLES DE DECISIÓN
+
+#### CART
+
+```{r}
+pred_Y <- predict(fit.cart, validacion, type="raw")
+
+# Resultados generales
+print(fit.cart)
+  print(fit.cart$results)
+  print(paste("Mejor modelo:"))
+  print(fit.cart$bestTune)
+  print(fit.cart$finalModel)
+
+# Importancia de las variables
+  print(varImp(fit.cart))
+  plot(varImp(fit.cart))
+```
+
+#### RANDOM FOREST
+
+```{r}
+pred_Y <- predict(fit.rf, validacion, type="raw")
+
+# Resultados generales
+print(fit.rf)
+  print(fit.rf$results)
+  print(paste("Mejor modelo:"))
+  print(fit.rf$bestTune)
+  print(fit.rf$finalModel)
+
+```
+
+### MÉTODOS DE VECINDAD
+#### K VECINOS
+
+```{r}
+pred_Y <- predict(fit.knn, validacion, type="raw")
+
+# Resultados generales
+print(fit.knn)  
+print(fit.knn$results)
+  print(paste("Mejor modelo:"))
+  print(fit.knn$bestTune)
+  print(fit.knn$finalModel)
+
+
+```
+
+### REDES NEURONALES
+#### Perceptrón multicapa
+
+```{r}
+pred_Y <- predict(fit.mlp, validacion, type="raw")
+
+# Resultados generales
+print(fit.mlp)
+  print(fit.mlp$results)
+  print(paste("Mejor modelo:"))
+  print(fit.mlp$bestTune)
+  print(fit.mlp$finalModel)
+
+
+```
+
+### MÁQUINAS DE VECTORES SOPORTE
+#### MAQUINAS VECTORES SOPORTE GAUSSIANA
+
+```{r}
+pred_Y <- predict(fit.svm, validacion, type="raw")
+
+# Resultados generales
+  print(fit.svm)
+  print(fit.svm$results)
+  print(paste("Mejor modelo:"))
+  print(fit.svm$bestTune)
+  print(fit.svm$finalModel)
+
+
+```
+
+###BAGGING Y BOOSTING
+
+#### BAGGING
+
+```{r}
+pred_Y <- predict(fit.bag, validacion, type="raw")
+
+# Resultados generales
+  print(fit.bag)
+  print(fit.bag$results)
+  print(paste("Mejor modelo:"))
+  print(fit.bag$bestTune)
+  print(fit.bag$finalModel)
+
+# Tabla de confusión e importancia de las variables
+  print(varImp(fit.bag))
+  plot(varImp(fit.bag))
+```
+
+#### GBM Stochastic Gradient Boosting
+
+```{r}
+pred_Y <- predict(fit.gbm, validacion, type="raw")
+
+# Resultados generales
+print(fit.gbm)
+  print(fit.gbm$results)
+  print(paste("Mejor modelo:"))
+  print(fit.gbm$bestTune)
+  print(fit.gbm$finalModel)
+
+
+# Importancia de las variables
+  print(varImp(fit.gbm))
+  plot(varImp(fit.gbm))
+```
+
+
+#### GBM eXtreme Gradient Boosting (xgbTree, xgbLinear)
+
+```{r}
+pred_Y <- predict(fit.xgbTree, validacion, type="raw")
+
+# Resultados generales
+print(fit.xgbTree)  
+print(fit.xgbTree$results)
+print(paste("Mejor modelo:"))
+print(fit.xgbTree$bestTune)
+print(fit.xgbTree$finalModel)
+
+# Tabla de confusión e importancia de las variables
+print(varImp(fit.xgbTree))
+plot(varImp(fit.xgbTree))
+```
+
+### Comparativa de modelos
+
+
+#### Evaluación de modelos
+
+<p style="font-family: arial; font-size:11pt;text-align: justify">Para la evaluación del modelo, se debe encontrar el metodo o algoritmo que cometa el error mínimo en la predicción de los datos de la variable respuesta.
+
+En los problemas de clasificación como el que ocupa, hay diferentes métricas para su evaluación como son:
+
+**Accuracy** (precisión o exactitud): Porcentaje de casos positivos detectados, es decir,  $AC = (VP+VN)/N$. Una clasificación ideal tendría valor 1.
+
+VP: Verdadero positivo
+VN: Verdadero negativo
+FP: Falso positivo
+FN: Falso negativo
+
+**Sensibilidad**: Probabilidad de clasificar correctamente a un accidente cuyo estado real sea la presencia de la condición de interés, $S=VP/(VP+FN)$.
+
+**Especificidad**: Probabilidad de clasificar correctamente a un accidente cuyo estado real sea la ausencia de la condición de interés, $E=VN/(FP+VN)$.
+
+**Kappa**: Precisión del modelo a la hora de predecir la clase verdadera
+
+Kappa | Clasificación |
+-------|------------- |
+k< 0.4 | Insuficiente|
+0.4 < k < 0.6| Moderado|
+k> 0.6 | Concordancia elevada |
+
+**AUC** : Area bajo curva ROC
+
+AUC | Clasificación |
+----|---------------|
+0.50 - 0.75 | Justo|
+0.75 - 0.92| Moderado|
+0.92 - 0.97| Muy buena|
+0.97 - 1 | Excelente |
+
+</p>
+
+```{r}
+resultados <- resamples(list(CART=fit.cart, RF=fit.rf, KNN=fit.knn, RED_NEURONAL=fit.mlp, SVM=fit.svm, BAGG= fit.bag, GBM=fit.gbm, XGBoost=fit.xgbTree))
+summary(resultados)
+dotplot(resultados)
+
+```
+
+
+## Selección del algoritmo.
+
+A la vista de los resultados obtenido, nos inclinamos por la elección del modelo MODELO GBM eXtreme Gradient Boosting (xgbTree, xgbLinear).
+
+Este algoritmo consigue los mejores índices de tanto Accuracy, ROC, sensibilidad y kappa, mientras que en relación a la especificidad son algo superiores los resultados de los K-vecinos y máquinas de vectores soporte.
+
+XGBoost significa eXtreme Gradient Boosting. Este algoritmo que ha obtenido muy buenos resultados en problemas de Machine learning con datos estructurados.. XGBoost es una implementación de árboles de decisión con Gradient boosting diseñada para minimizar la velocidad de ejecución y maximizar el rendimiento. 
+
+Internamente, XGBoost representa todos los problemas como un caso de modelado predictivo de regresión que sólo toma valores numéricos como entrada.
+
+```{r}
+data_mod$pred <- predict(fit.xgbTree , data_mod)
+
+#predicciones
+prediciones <- predict(fit.xgbTree, newdata = validacion) 
+# Matriz de confusión 
+confusionMatrix(prediciones, validacion$af)
+
+```
+
+si se realiza introducen los resultados la predicción sobre la base aplicada al modelo se obtendría la siguiente matriz de confusión:
+
+```{r}
+
+#predicciones
+prediciones2 <- predict(fit.xgbTree, newdata = data_mod) 
+# Matriz de confusión 
+confusionMatrix(prediciones2, data_mod$af)
+```
+
+Tomando como clase de interes (positiva) "no asistencia", resultan que hay 354 casos  donde se predice no asistencia y finalmente no hay personas que deban ser atendidas(verdaderos positivos). sin embargo, hubo otros 156 casos en que se predijo que no haría falta asistencia y se requirio el servicio sanitario.Esta situación, puede considerarse como una predicción que debe mejorarse para la mejor atención de los usuarios accidentados.  
+
+Respecto a la predicción de "sí asistencia" (clase negativa), se produjeron 1.152 casos en que realmente los accidentados requirieron asistencia (falsos negativos), frente a 170 casos, en que se predijo asistencia y no fue necesaria. Esta situación podría considerarse como un sobrecoste, al enviar un servicio médico que no tuvo que intervenir.
+
+
+
+# Conclusiones
+
+Tras la comparación entre diferentes algoritmos, se ha elegido la modelización por medio de GBM eXtreme Gradient Boosting, consiguiendo los mejores resultados practicamente en todas las métricas utilizadas en la clasificación.
+
+Los resultados ofrecidos, ofrecen un resultado de precisión del 85,3%, superior a nivel basal del 77%. Debería mejorarse, especialmente respecto a la sensibilidad que devuelve un valor de 0.67, para la determinación de observaciones con la presencia de la condición de interés, en este caso, en los que se predice la no asistencia.
+
+Respecto, a la metrica Kappa, el valor obtenido 0,59, le situa en una concordancia en la frontera entre moderada y buena.
+
+En cualquier caso, aunque alguna labor de balanceo de la muestra podría ofrecer una mejora de resultados, la predicción para evaluar la asistencia de los heridos en los accidentes de la Calle30 podría suponer una ayuda para la determinación de envío de unidades médicas de asistencia.
+
+
+```{r}
+save.image("C:/mio/BD_uned/MOD_16_TFM/codigos/tfm_def.RData")
+```
+
+
+
